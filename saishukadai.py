@@ -121,15 +121,60 @@ def get_gemini_prediction(prompt_text):
         st.error(f"Gemini API エラー: {e}")
         return None
 with st.expander("Gemini AIによる為替レート予測"):
-    prompt = st.text_area("予測したい内容を入力してください（例：USD/JPYの来週の為替レート予測）", key="gemini_prompt")
 
-    if st.button("予測を取得"):
+    # 通貨ペア名を生成
+    currency_pair = f"{from_currency}/{to_currency}"
+
+    # 通貨ペアごとの質問テンプレート辞書
+    pair_prompts = {
+        "USD/JPY": {
+            "今週のドル円動向を予測": "今後1週間のUSD/JPY（ドル円）の為替相場について、アメリカのインフレ、FRBの金利政策、日本の経済情勢を踏まえて、予想されるトレンドを分析してください。",
+            "円安要因を解説": "2024年以降の円安傾向に関する主な要因を、アメリカと日本の政策・景気・金利差から解説してください。",
+        },
+        "EUR/JPY": {
+            "ユーロ円の影響要因": "EUR/JPY（ユーロ円）相場に影響を与える要因を、ECBの金融政策やユーロ圏の経済状況、日本の景気との比較から分析してください。",
+            "今後の為替の見通し": "今後1ヶ月のユーロ円相場について、為替変動に影響するイベントや指標を踏まえて、複数のシナリオを解説してください。",
+        },
+        "GBP/JPY": {
+            "ポンド円のトレンド分析": "GBP/JPY（ポンド円）の相場が最近どのようなトレンドを示しているかを、英中銀の政策や英国の経済情勢に基づいて解説してください。",
+        },
+        "USD/EUR": {
+            "ドルユーロの今後": "米ドルとユーロの相場（USD/EUR）について、FRBとECBのスタンスや欧米経済指標の違いから、今後の見通しを分析してください。",
+        },
+        # デフォルト
+        "default": {
+            "一般的な為替動向の分析": "最近の為替相場の変動について、各国の金融政策や国際情勢がどう影響しているかをわかりやすく解説してください。"
+        }
+    }
+
+    # 対応テンプレートを取得（ない場合はdefaultを使う）
+    prompts_for_pair = pair_prompts.get(currency_pair, pair_prompts["default"])
+
+    selected_prompt_title = st.selectbox("質問テンプレートを選ぶ（通貨ペアに応じて表示）", ["選択してください"] + list(prompts_for_pair.keys()))
+    if selected_prompt_title != "選択してください":
+        st.session_state["gemini_prompt"] = prompts_for_pair[selected_prompt_title]
+
+    # テキストエリアにテンプレ反映
+    prompt = st.text_area("分析してほしい内容を入力してください", key="gemini_prompt")
+
+    if st.button("Geminiに依頼する"):
         if prompt.strip() == "":
-            st.warning("予測内容を入力してください")
+            st.warning("質問内容を入力してください")
         else:
             prediction = get_gemini_prediction(prompt)
             st.session_state["gemini_prediction"] = prediction
 
     if "gemini_prediction" in st.session_state:
-        st.markdown("### 予測結果")
+        st.markdown("### Geminiの分析結果")
         st.write(st.session_state["gemini_prediction"])
+
+    # 使い方のガイド
+    with st.expander("📘 Geminiの使い方ガイド"):
+        st.markdown(f"""
+        - **Geminiは未来の為替レートを断定しません。**
+        - 通貨ペア「**{currency_pair}**」に関する背景分析・要因説明に強みがあります。
+        - 質問のヒント：
+            - 「最近の金利差の影響は？」
+            - 「中央銀行の政策スタンスはどう変化しているか？」
+            - 「地政学リスクが為替に与える影響は？」
+        """)
