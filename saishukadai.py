@@ -80,7 +80,7 @@ if st.session_state.history:
 
     if st.button("履歴をクリア"):
         st.session_state.history = []
-        st.experimental_rerun()
+        st.rerun()
 
 #期間
 days = st.slider("過去何日間のレートを表示する？", min_value = 7, max_value = 90, value = 30)
