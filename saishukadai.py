@@ -21,7 +21,7 @@ to_currency = st.selectbox("変換先通貨", [c for c in currencies if c != fro
 # 為替レート取得関数
 def get_live_rate(from_cur, to_cur):
     try:
-        url = f"https://api.frankfurter.app/latest?from={from_cur}&to={to_cur}"
+        url = f"https://api.frankfurter.app/latest?base={from_cur}&to={to_cur}"
         response = requests.get(url)
         data = response.json()
         rate = data["rates"][to_cur]
