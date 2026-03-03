@@ -114,7 +114,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 def get_gemini_prediction(prompt_text):
     try:
-        model = genai.GenerativeModel("gemini-flash")  # または "gemini-pro"
+        model = genai.GenerativeModel("gemini-2.5-flash")  # または "gemini-pro"
         response = model.generate_content(prompt_text)
         return response.text
     except Exception as e:
